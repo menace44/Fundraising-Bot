@@ -1,0 +1,61 @@
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('donateForm');
+    const progressBar = document.getElementById('progress-fill');
+    const progressText = document.getElementById('progress-text');
+    const leaderboard = document.getElementById('leaderboard-list');
+    const raffleTickets = document.getElementById('raffle-tickets');
+    const milestoneMessages = document.getElementById('milestone-messages');
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        // Get user input
+        const name = document.getElementById('name').value;
+        const amount = parseFloat(document.getElementById('amount').value);
+
+        // Send donation data to backend via Fetch API
+        fetch('/donate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                name: name,
+                amount: amount
+            }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            // Update progress bar and text
+            const progress = data.progress * 100;
+            progressBar.style.width = progress + '%';
+            progressText.textContent = `Raised: $${data.total_raised} / $${data.goal}`;
+
+            // Display raffle tickets earned
+            raffleTickets.textContent = `You have earned ${data.raffle_tickets} raffle tickets!`;
+
+            // Display milestone messages
+            milestoneMessages.innerHTML = '';
+            data.milestone_messages.forEach(message => {
+                const milestoneDiv = document.createElement('div');
+                milestoneDiv.textContent = message;
+                milestoneMessages.appendChild(milestoneDiv);
+            });
+
+            // Reset form
+            form.reset();
+        });
+    });
+
+    // Fetch and display leaderboard on page load
+    fetch('/leaderboard')
+        .then(response => response.json())
+        .then(data => {
+            leaderboard.innerHTML = '';
+            data.leaderboard.forEach(([name, amount]) => {
+                const listItem = document.createElement('li');
+                listItem.textContent = `${name}: $${amount}`;
+                leaderboard.appendChild(listItem);
+            });
+        });
+});
