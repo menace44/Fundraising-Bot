@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FundraisingBot - Donate Now!</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Welcome to FundraisingBot</h1>
+        <p>Help us reach our fundraising goal and win amazing prizes in the raffle!</p>
+    </header>
+    
+    <section id="donation-form">
+        <h2>Make a Donation</h2>
+        <form id="donateForm">
+            <input type="text" id="name" placeholder="Your Name" required>
+            <input type="number" id="amount" placeholder="Donation Amount" required min="10">
+            <button type="submit">Donate Now</button>
+        </form>
+        <div id="form-output"></div>
+    </section>
+
+    <section id="progress-section">
+        <h2>Progress Towards Goal</h2>
+        <div id="progress-bar">
+            <div id="progress-fill"></div>
+        </div>
+        <p id="progress-text">Raised: $0 / $5000</p>
+    </section>
+
+    <section id="leaderboard">
+        <h2>Top Donors</h2>
+        <ul id="leaderboard-list"></ul>
+    </section>
+
+    <section id="milestones">
+        <h2>Milestones</h2>
+        <div id="milestone-messages"></div>
+    </section>
+
+    <section id="raffle-section">
+        <h2>Raffle Tickets Earned</h2>
+        <p id="raffle-tickets">You have earned 0 raffle tickets!</p>
+    </section>
+
+    <footer>
+        <p>&copy; 2024 FundraisingBot. All rights reserved.</p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>
