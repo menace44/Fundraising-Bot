@@ -1,0 +1,64 @@
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('donateForm');
+    const progressBar = document.getElementById('progress-fill');
+    const progressText = document.getElementById('progress-text');
+    const leaderboard = document.getElementById('leaderboard-list');
+    const raffleTickets = document.getElementById('raffle-tickets');
+    const milestoneMessages = document.getElementById('milestone-messages');
+
+    let totalRaised = 0;
+    const goalAmount = 5000;
+    const milestones = [0.5, 0.75, 1.0];  // 50%, 75%, and 100% milestones
+    let donors = {};
+
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        // Get user input
+        const name = document.getElementById('name').value;
+        const amount = parseFloat(document.getElementById('amount').value);
+
+        // Update total raised
+        totalRaised += amount;
+
+        // Update donor leaderboard
+        if (donors[name]) {
+            donors[name] += amount;
+        } else {
+            donors[name] = amount;
+        }
+        updateLeaderboard();
+
+        // Update progress bar and text
+        const progress = (totalRaised / goalAmount) * 100;
+        progressBar.style.width = progress + '%';
+        progressText.textContent = `Raised: $${totalRaised} / $${goalAmount}`;
+
+        // Check for milestones
+        milestones.forEach(function(milestone) {
+            if (totalRaised / goalAmount >= milestone && !document.getElementById(`milestone-${milestone}`)) {
+                const milestoneDiv = document.createElement('div');
+                milestoneDiv.id = `milestone-${milestone}`;
+                milestoneDiv.textContent = `Milestone Reached: ${milestone * 100}% of goal!`;
+                milestoneMessages.appendChild(milestoneDiv);
+            }
+        });
+
+        // Calculate raffle tickets
+        const tickets = Math.floor(amount / 100);
+        raffleTickets.textContent = `You have earned ${tickets} raffle tickets!`;
+
+        // Reset form
+        form.reset();
+    });
+
+    function updateLeaderboard() {
+        leaderboard.innerHTML = '';
+        const sortedDonors = Object.entries(donors).sort((a, b) => b[1] - a[1]);
+        sortedDonors.forEach(([name, amount]) => {
+            const listItem = document.createElement('li');
+            listItem.textContent = `${name}: $${amount}`;
+            leaderboard.appendChild(listItem);
+        });
+    }
+});
