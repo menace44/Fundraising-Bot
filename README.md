@@ -1,5 +1,5 @@
-Full Finalization of the FundraisingBot Project
 # Fundraising-Bot
+
 🐣 Simple Steps to Build the Fundraising Bot
 
 We’ll break down everything into easy parts, with explanations and code along the way.
