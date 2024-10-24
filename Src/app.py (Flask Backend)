@@ -1,0 +1,96 @@
+from flask import Flask, jsonify, request
+
+app = Flask(__name__)
+
+# Global variables to track donations, progress, and raffle tickets
+donations = {}
+total_donations = 0
+goal_amount = 5000
+raffle_tickets = {}
+prizes = ["Game System", "ATV", "Big Screen TV"]
+milestones = [0.5, 0.75, 1.0]  # 50%, 75%, 100% milestones
+
+@app.route('/donate', methods=['POST'])
+def donate():
+    global total_donations
+    data = request.json
+    name = data.get('name')
+    amount = float(data.get('amount'))
+    
+    # Update donations and raffle tickets
+    if name in donations:
+        donations[name] += amount
+    else:
+        donations[name] = amount
+    total_donations += amount
+    tickets = assign_raffle_tickets(name, amount)
+    
+    # Check progress and milestones
+    progress, milestone_msgs = check_progress()
+
+    return jsonify({
+        "message": f"Thank you {name}, for donating ${amount:.2f} and earning {tickets} raffle tickets!",
+        "progress": progress,
+        "milestone_messages": milestone_msgs,
+        "raffle_tickets": tickets
+    })
+
+def assign_raffle_tickets(name, amount):
+    """Assign 1 raffle ticket per $100 donated."""
+    tickets = int(amount // 100)
+    if name not in raffle_tickets:
+        raffle_tickets[name] = []
+    for i in range(tickets):
+        raffle_tickets[name].append(f"Ticket #{len(raffle_tickets[name]) + 1}")
+    return tickets
+
+def check_progress():
+    """Check fundraising progress."""
+    progress = total_donations / goal_amount
+    milestone_msgs = []
+    for milestone in milestones:
+        if total_donations / goal_amount >= milestone:
+            milestone_msgs.append(f"Milestone Reached: {int(milestone * 100)}%")
+    return progress, milestone_msgs
+
+@app.route('/progress', methods=['GET'])
+def get_progress():
+    """Get current progress and leaderboard."""
+    progress, milestone_msgs = check_progress()
+    return jsonify({
+        "progress": total_donations / goal_amount,
+        "total_raised": total_donations,
+        "goal": goal_amount,
+        "milestones": milestone_msgs
+    })
+
+@app.route('/leaderboard', methods=['GET'])
+def leaderboard():
+    """Get the leaderboard of top donors."""
+    sorted_donors = sorted(donations.items(), key=lambda x: x[1], reverse=True)
+    return jsonify({
+        "leaderboard": sorted_donors
+    })
+
+@app.route('/raffle', methods=['GET'])
+def raffle():
+    """Draw winners from the raffle tickets."""
+    global prizes
+    all_tickets = [(user, ticket) for user, tickets in raffle_tickets.items() for ticket in tickets]
+    
+    if not all_tickets:
+        return jsonify({"message": "No raffle tickets assigned yet."})
+
+    winners = {}
+    for prize in prizes:
+        if all_tickets:
+            winner = random.choice(all_tickets)
+            winners[prize] = winner[0]
+            all_tickets.remove(winner)
+    
+    return jsonify({
+        "winners": winners
+    })
+
+if __name__ == '__main__':
+    app.run(debug=True)
