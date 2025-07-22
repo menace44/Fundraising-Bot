@@ -8,6 +8,7 @@ class AdvancedFundraisingBot:
         self.goal_amount = goal_amount
         self.donations = {}  # To track user donations
         self.total_donations = 0  # Sum of all donations
+        self.description = "Support our cause by donating today! Your contribution helps us reach our fundraising goal and make a difference."
 
     def donate(self, user_name, amount):
         """Accept a donation from a user."""
@@ -26,7 +27,8 @@ bot = AdvancedFundraisingBot(goal_amount=1000)
 @app.route("/")
 def index():
     total, goal = bot.get_progress()
-    return render_template('index.html', total=total, goal=goal)
+    description = bot.description
+    return render_template('index.html', total=total, goal=goal, description=description)
 
 @app.route("/donate", methods=["POST"])
 def donate():
@@ -34,7 +36,8 @@ def donate():
     amount = float(request.form["amount"])
     bot.donate(user_name, amount)
     total, goal = bot.get_progress()
-    return render_template('index.html', total=total, goal=goal, message=f"Thank you {user_name} for donating ${amount:.2f}!")
+    description = bot.description
+    return render_template('index.html', total=total, goal=goal, message=f"Thank you {user_name} for donating ${amount:.2f}!", description=description)
 
 if __name__ == "__main__":
     app.run(debug=True)
