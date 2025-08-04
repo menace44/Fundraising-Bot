@@ -1,4 +1,5 @@
 import random
+import math
 from flask import Flask, request, render_template
 
 app = Flask(__name__)
@@ -31,9 +32,11 @@ class FundraisingBot:
 
     def assign_raffle_tickets(self, user_name, amount):
         """Assign raffle tickets based on donation amount."""
-        tickets = int(amount // 100)
+        # Calculate tickets: one ticket per $100, rounded up
+        tickets = math.ceil(amount / 100)  # Use regular division and round up
         if user_name not in self.raffle_tickets:
             self.raffle_tickets[user_name] = []
+        # Assign exactly the calculated number of tickets
         self.raffle_tickets[user_name] = [f"Ticket #{i + 1}" for i in range(tickets)]
 
     def get_progress(self):
@@ -77,7 +80,12 @@ bot = FundraisingBot(goal_amount=1000)
 def index():
     total, goal = bot.get_progress()
     description = bot.description
-    return render_template('index.html', total=total, goal=goal, description=description)
+    return render_template('index.html', 
+                         total=total, 
+                         goal=goal, 
+                         description=description,
+                         min_donation=bot.min_donation,
+                         max_donation=bot.max_donation)
 
 @app.route("/donate", methods=["POST"])
 def donate():
@@ -86,7 +94,22 @@ def donate():
     message = bot.donate(user_name, amount)  # Capture the message
     total, goal = bot.get_progress()
     description = bot.description
-    return render_template('index.html', total=total, goal=goal, message=message, description=description)  # Use the captured message
+    
+    # Get progress milestones
+    _, milestones = bot.check_progress()
+    
+    # Get user's tickets if donation was successful
+    tickets = bot.raffle_tickets.get(user_name, []) if 'Thank you' in message else []
+    
+    return render_template('index.html', 
+                         total=total, 
+                         goal=goal, 
+                         message=message, 
+                         description=description,
+                         min_donation=bot.min_donation,
+                         max_donation=bot.max_donation,
+                         tickets=tickets,
+                         milestones=milestones)
 
 if __name__ == "__main__":
     app.run(debug=True)
